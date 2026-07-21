@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garmin — карусель для соцмереж</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --page:#eef0f4;
+    --surface:#ffffff;
+    --ink:#0f1826;
+    --ink-soft:#5a6272;
+    --ink-faint:#8991a1;
+    --blue:#2b71b9;
+    --blue-deep:#153f6b;
+    --blue-soft:#e4edf8;
+    --amber:#dd7f1f;
+    --amber-deep:#8a4c0e;
+    --amber-soft:#fbeee0;
+    --neutral-deep:#3c4353;
+    --line: rgba(15,24,38,0.10);
+    --radius: 26px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--page);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+
+  .page{max-width:560px;margin:0 auto;padding:30px 18px 46px;}
+
+  .page-head{margin-bottom:20px;}
+  .page-head .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-deep);margin:0 0 10px;}
+  .page-head h1{font-family:'Unbounded',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.01em;margin:0 0 8px;}
+  .page-head p{font-size:13.5px;line-height:1.5;color:var(--ink-soft);margin:0;}
+
+  .toolbar{display:flex;justify-content:flex-end;margin-bottom:14px;}
+  .btn-all{font-family:'Inter';font-size:12.5px;font-weight:600;color:var(--blue-deep);background:var(--blue-soft);border:1px solid rgba(43,113,185,.25);padding:9px 14px;border-radius:100px;cursor:pointer;transition:transform .15s ease, background .15s ease;}
+  .btn-all:hover{background:#d7e5f5;}
+  .btn-all:active{transform:scale(.96);}
+
+  .carousel-wrap{position:relative;display:flex;align-items:center;gap:8px;}
+  .nav{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(15,24,38,.08);}
+  .nav:active{transform:scale(.92);}
+
+  .carousel{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;border-radius:calc(var(--radius) + 6px);}
+  .carousel::-webkit-scrollbar{display:none;}
+
+  .slide{flex:0 0 100%;scroll-snap-align:center;position:relative;padding:2px;}
+  .slide-viewport{
+    width:100%;aspect-ratio:4/5;position:relative;overflow:hidden;border-radius:var(--radius);
+    background:var(--surface);
+    box-shadow:0 22px 46px -20px rgba(15,24,38,.4), 0 2px 10px rgba(15,24,38,.06);
+    container-type: inline-size;
+    container-name: card;
+  }
+
+  .stage{position:relative;width:100%;height:100%;display:flex;flex-direction:column;padding:7.4cqw 7.6cqw 6.2cqw;overflow:hidden;isolation:isolate;}
+  .stage-bg{position:absolute;inset:0;z-index:-1;}
+  .stage-bg::before, .stage-bg::after{content:'';position:absolute;border-radius:50%;filter:blur(2px);opacity:.5;}
+  .bg-cover{background:linear-gradient(160deg,#ffffff 0%,#eef4fb 55%,#e4edf8 100%);}
+  .bg-cover::before{width:70cqw;height:70cqw;background:radial-gradient(circle,rgba(43,113,185,.16),transparent 70%);top:-22cqw;right:-24cqw;}
+  .bg-cover::after{width:46cqw;height:46cqw;background:radial-gradient(circle,rgba(221,127,31,.13),transparent 70%);bottom:-14cqw;left:-14cqw;}
+  .bg-blue{background:linear-gradient(160deg,#ffffff 0%,#eef4fb 60%,#e4edf8 100%);}
+  .bg-blue::before{width:80cqw;height:80cqw;background:radial-gradient(circle,rgba(43,113,185,.15),transparent 68%);top:-26cqw;right:-28cqw;}
+  .bg-amber{background:linear-gradient(160deg,#ffffff 0%,#fdf3e8 60%,#fbeee0 100%);}
+  .bg-amber::before{width:80cqw;height:80cqw;background:radial-gradient(circle,rgba(221,127,31,.17),transparent 68%);top:-26cqw;right:-28cqw;}
+  .bg-neutral{background:linear-gradient(160deg,#ffffff 0%,#f2f3f6 60%,#e9eaef 100%);}
+  .bg-neutral::before{width:80cqw;height:80cqw;background:radial-gradient(circle,rgba(60,67,83,.10),transparent 68%);top:-26cqw;right:-28cqw;}
+
+  /* tag row */
+  .tag-row{display:flex;align-items:center;gap:2.4cqw;flex-wrap:wrap;}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:2.9cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--ink);padding:1.6cqw 3cqw;border-radius:100px;}
+  .tag-outline{color:var(--ink);background:transparent;border:1.5px solid var(--ink);}
+  .news--amber .tag{background:var(--amber-deep);}
+  .news--amber .tag-outline{color:var(--amber-deep);border-color:var(--amber-deep);}
+  .news--blue .tag{background:var(--blue-deep);}
+  .news--blue .tag-outline{color:var(--blue-deep);border-color:var(--blue-deep);}
+  .news--neutral .tag{background:var(--neutral-deep);}
+  .news--neutral .tag-outline{color:var(--neutral-deep);border-color:var(--neutral-deep);}
+
+  /* motifs */
+  .motif-wrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;}
+  .m-ring{border-radius:50%;position:absolute;}
+  .m-ring--blue{border:0.9cqw solid var(--blue);}
+  .m-ring--blue-deep{border:0.9cqw solid var(--blue-deep);background:rgba(255,255,255,.55);}
+  .m-ring--amber{border:0.9cqw solid var(--amber);}
+  .m-ring--dashed{border-style:dashed;}
+  .cover-cluster{width:100%;height:100%;position:relative;}
+  .cover-cluster .m-ring--lg{width:44cqw;height:44cqw;top:6%;left:6%;}
+  .cover-cluster .m-ring--md{width:30cqw;height:30cqw;bottom:10%;right:10%;border-color:var(--amber);}
+  .cover-cluster .m-capsule{width:34cqw;height:13cqw;top:44%;right:2%;border:0.9cqw solid var(--neutral-deep);border-radius:100px;position:absolute;background:rgba(255,255,255,.5);}
+
+  .fenix-motif{position:relative;width:100%;height:100%;}
+  .fenix-motif .r1{width:58cqw;height:58cqw;top:6%;left:8%;}
+  .fenix-motif .r2{width:38cqw;height:38cqw;bottom:6%;right:10%;}
+
+  .enduro-motif{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+  .enduro-motif .ring{width:58cqw;height:58cqw;position:static;}
+  .enduro-motif .core{position:absolute;width:2.6cqw;height:2.6cqw;border-radius:50%;background:var(--amber);top:calc(50% - 29cqw);left:50%;transform:translateX(-50%);}
+
+  .cirqa-motif{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+  .cirqa-motif .capsule{width:64cqw;height:22cqw;border:0.9cqw solid var(--neutral-deep);border-radius:100px;position:relative;background:rgba(255,255,255,.5);}
+  .cirqa-motif .capsule::after{content:'';position:absolute;left:50%;top:50%;width:0.5cqw;height:60%;background:var(--neutral-deep);opacity:.35;transform:translate(-50%,-50%);}
+
+  /* copy */
+  .cover-copy{margin-top:4cqw;}
+  .cover-title{font-family:'Unbounded',sans-serif;font-weight:800;font-size:11.6cqw;line-height:1.03;letter-spacing:-.01em;margin:0;color:var(--ink);}
+  .cover-sub{font-size:4.6cqw;font-weight:500;color:var(--ink-soft);margin:3.2cqw 0 0;line-height:1.4;}
+
+  .news-copy{margin-top:3cqw;}
+  .news-title{font-family:'Unbounded',sans-serif;font-weight:800;font-size:8.6cqw;line-height:1.1;letter-spacing:-.005em;margin:0 0 3.6cqw;color:var(--ink);}
+  .thesis-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2.4cqw;}
+  .thesis-list li{position:relative;padding-left:6.2cqw;font-size:4.3cqw;line-height:1.5;font-weight:500;color:var(--ink-soft);}
+  .thesis-list li::before{content:'';position:absolute;left:0;top:.6cqw;width:3.4cqw;height:0.7cqw;border-radius:2px;background:var(--blue);}
+  .news--amber .thesis-list li::before{background:var(--amber);}
+  .news--neutral .thesis-list li::before{background:var(--neutral-deep);}
+
+  /* bottom row */
+  .bottom-row{margin-top:auto;padding-top:4cqw;display:flex;align-items:center;justify-content:space-between;gap:2cqw;flex-wrap:wrap;}
+  .pill{font-size:3cqw;font-weight:600;padding:1.8cqw 3.2cqw;border-radius:100px;display:inline-flex;align-items:center;gap:1.2cqw;}
+  .pill-outline{border:1.4px solid var(--ink-faint);color:var(--ink-soft);}
+  .pill-dark{background:var(--ink);color:#fff;}
+  .footnote{font-size:3cqw;color:var(--ink-faint);font-weight:500;}
+  .swipe-hint{font-size:3cqw;color:var(--ink-faint);font-weight:600;font-family:'JetBrains Mono',monospace;}
+
+  /* poll */
+  .poll-copy{margin-top:4cqw;display:flex;flex-direction:column;flex:1;justify-content:center;}
+  .poll-options{display:flex;flex-direction:column;gap:3.4cqw;margin:6cqw 0;}
+  .poll-opt{display:flex;align-items:center;gap:3.4cqw;font-family:'Unbounded',sans-serif;font-weight:700;font-size:6cqw;color:var(--ink);background:#fff;border:1.4px solid var(--line);padding:3.6cqw 4.6cqw;border-radius:20px;}
+  .dot{width:4.4cqw;height:4.4cqw;border-radius:50%;flex:0 0 auto;}
+  .dot-blue{background:var(--blue);}
+  .dot-amber{background:var(--amber);}
+  .dot-outline{background:#fff;border:1.6px solid var(--neutral-deep);}
+  .poll-cta{font-size:4.4cqw;color:var(--ink-soft);font-weight:600;margin:0;}
+
+  /* save button */
+  .save-btn{
+    position:absolute;right:14px;bottom:14px;z-index:5;
+    width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(255,255,255,.88);backdrop-filter:blur(6px);
+    box-shadow:0 6px 18px rgba(15,24,38,.18);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink);transition:transform .15s ease;
+  }
+  .save-btn:active{transform:scale(.9);}
+  .save-btn svg{width:16px;height:16px;}
+  .save-label{
+    position:absolute;left:14px;bottom:14px;z-index:5;
+    font-family:'Inter';font-size:10.5px;font-weight:600;color:var(--ink-soft);
+    background:rgba(255,255,255,.88);backdrop-filter:blur(6px);
+    padding:6px 10px;border-radius:100px;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .save-label.show{opacity:1;}
+
+< truncated lines 157-296 >
+              </ul>
+            </div>
+            <div class="bottom-row">
+              <span class="pill pill-outline">⚠ Неофіційна інформація</span>
+            </div>
+          </div>
+          <button class="save-btn" data-target="stage-4" aria-label="Зберегти слайд">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <span class="save-label" id="label-4">Зберігаю…</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 5 — POLL -->
+      <section class="slide">
+        <div class="slide-viewport">
+          <div class="stage poll" id="stage-5">
+            <div class="stage-bg bg-cover"></div>
+            <div class="tag-row"><span class="tag tag-outline">Опитування</span></div>
+            <div class="poll-copy">
+              <h2 class="news-title">Що з цього цікавіше вам?</h2>
+              <div class="poll-options">
+                <div class="poll-opt"><span class="dot dot-blue"></span>Fenix 9</div>
+                <div class="poll-opt"><span class="dot dot-amber"></span>Enduro 4</div>
+                <div class="poll-opt"><span class="dot dot-outline"></span>Garmin CIRQA</div>
+              </div>
+              <p class="poll-cta">Напишіть свій варіант у коментарях ↓</p>
+            </div>
+          </div>
+          <button class="save-btn" data-target="stage-5" aria-label="Зберегти слайд">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <span class="save-label" id="label-5">Зберігаю…</span>
+        </div>
+      </section>
+
+    </div>
+
+    <button class="nav next" aria-label="Наступний слайд">›</button>
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+</div>
+
+<script>
+  const track = document.getElementById('carousel');
+  const slides = [...track.children];
+  const dotsWrap = document.getElementById('dots');
+  const prevBtn = document.querySelector('.nav.prev');
+  const nextBtn = document.querySelector('.nav.next');
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot-nav';
+    d.setAttribute('aria-label', `Слайд ${i + 1}`);
+    d.addEventListener('click', () => slides[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }));
+    dotsWrap.appendChild(d);
+  });
+  const dots = [...dotsWrap.children];
+
+  function currentIndex() {
+    const trackCenter = track.scrollLeft + track.clientWidth / 2;
+    let closest = 0, closestDist = Infinity;
+    slides.forEach((s, i) => {
+      const dist = Math.abs((s.offsetLeft + s.clientWidth / 2) - trackCenter);
+      if (dist < closestDist) { closestDist = dist; closest = i; }
+    });
+    return closest;
+  }
+
+  function refreshDots() {
+    const cur = currentIndex();
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+    return cur;
+  }
+
+  let ticking = false;
+  track.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => { refreshDots(); ticking = false; });
+      ticking = true;
+    }
+  });
+
+  prevBtn.addEventListener('click', () => {
+    const cur = currentIndex();
+    const target = Math.max(0, cur - 1);
+    slides[target].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  });
+  nextBtn.addEventListener('click', () => {
+    const cur = currentIndex();
+    const target = Math.min(slides.length - 1, cur + 1);
+    slides[target].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') prevBtn.click();
+    if (e.key === 'ArrowRight') nextBtn.click();
+  });
+
+  refreshDots();
+
+  // --- export ---
+  async function exportStage(stageId) {
+    const stage = document.getElementById(stageId);
+    const rect = stage.getBoundingClientRect();
+    const scale = 1080 / rect.width;
+    await document.fonts.ready;
+    const canvas = await html2canvas(stage, { scale, backgroundColor: '#ffffff', useCORS: true });
+    return canvas;
+  }
+
+  function triggerDownload(canvas, name) {
+    const link = document.createElement('a');
+    link.download = name;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const stageId = btn.dataset.target;
+      const label = document.getElementById('label-' + stageId.split('-')[1]);
+      label.classList.add('show');
+      label.textContent = 'Зберігаю…';
+      try {
+        const canvas = await exportStage(stageId);
+        triggerDownload(canvas, `garmin-${stageId}.png`);
+        label.textContent = 'Збережено ✓';
+      } catch (err) {
+        label.textContent = 'Не вдалось — зробіть скрін';
+        console.error(err);
+      }
+      setTimeout(() => label.classList.remove('show'), 1800);
+    });
+  });
+
+  document.getElementById('saveAll').addEventListener('click', async () => {
+    const btn = document.getElementById('saveAll');
+    const original = btn.textContent;
+    for (let i = 1; i <= slides.length; i++) {
+      btn.textContent = `Зберігаю слайд ${i}/${slides.length}…`;
+      try {
+        const canvas = await exportStage('stage-' + i);
+        triggerDownload(canvas, `garmin-slide-${i}.png`);
+      } catch (err) { console.error(err); }
+      await new Promise(r => setTimeout(r, 400));
+    }
+    btn.textContent = 'Готово ✓';
+    setTimeout(() => btn.textContent = original, 1800);
+  });
+</script>
+</body>
+</html>
